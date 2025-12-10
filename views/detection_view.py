@@ -194,7 +194,7 @@ class DetectionView:
                                                     style=ft.ButtonStyle(shape=ft.RoundedRectangleBorder(radius=10), padding=15),
                                                     on_click=lambda _: file_picker.pick_files(allow_multiple=False, file_type=ft.FilePickerFileType.IMAGE)),
                                     ft.ElevatedButton("Cámara", icon="camera_alt", 
-                                                    style=ft.ButtonStyle(shape=ft.RoundedRectangleBorder(radius=10), padding=15, bgcolor=ft.colors.GREEN_600, color="white"),
+                                                    style=ft.ButtonStyle(shape=ft.RoundedRectangleBorder(radius=10), padding=15, bgcolor="green", color="white"),
                                                     on_click=lambda _: file_picker.pick_files(allow_multiple=False, file_type=ft.FilePickerFileType.IMAGE)),
                                 ],
                                 alignment=ft.MainAxisAlignment.CENTER,
