@@ -3,7 +3,21 @@ import numpy as np
 import os
 import sqlite3
 import datetime
-import tensorflow as tf
+
+# Intentar importar TensorFlow completo o TFLite Runtime
+try:
+    import tensorflow as tf
+    USE_TFLITE = False
+    print("Usando TensorFlow Full (PC)")
+except ImportError:
+    try:
+        import tflite_runtime.interpreter as tflite
+        USE_TFLITE = True
+        print("Usando TFLite Runtime (Móvil)")
+    except ImportError:
+        print("Error: No se encontró TensorFlow ni TFLite Runtime")
+        USE_TFLITE = None
+
 from controllers.auth_controller import auth_controller
 from utils.email_service import email_service
 
@@ -12,8 +26,9 @@ class DetectionController:
         self.db_path = db_path
         self.model_path = model_path
         self.model = None
+        self.interpreter = None
         self._init_db()
-        self._load_model()
+        self.load_model()
 
     def _init_db(self):
         conn = sqlite3.connect(self.db_path)
