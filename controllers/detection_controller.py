@@ -134,15 +134,13 @@ class DetectionController:
             img = cv2.cvtColor(img, cv2.COLOR_GRAY2RGB)
             
             # Normalización (EfficientNet suele esperar 0-255, pero verificamos float)
-            # El modelo fue entrenado sin rescale 1/255 en el generator? 
-            # Revisando train_model_gray.py: ImageDataGenerator NO tenia rescale. 
-            # EfficientNet tiene su propio preprocesamiento interno.
-            img_array = np.expand_dims(img, axis=0) # (1, 224, 224, 3)
+            img_array = img.astype(np.float32)
+            img_array = np.expand_dims(img_array, axis=0) # (1, 224, 224, 3)
 
             # Inferencia
-            if self.use_interpreter_logic: # Use the flag to decide
+            if self.interpreter or (hasattr(self, 'use_interpreter_logic') and self.use_interpreter_logic):
                 # Usar Intérprete TFLite
-                input_data = img_array.astype(np.float32)
+                input_data = img_array
                 self.interpreter.set_tensor(self.input_details[0]['index'], input_data)
                 self.interpreter.invoke()
                 prediction = self.interpreter.get_tensor(self.output_details[0]['index'])
