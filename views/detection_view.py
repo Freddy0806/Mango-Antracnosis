@@ -188,10 +188,19 @@ class DetectionView:
                     content=ft.Column(
                         [
                             ft.Text("Subir Imagen de Mango", size=20),
-                            ft.ElevatedButton("Cámara / Galería", icon="camera_alt", 
-                                            style=ft.ButtonStyle(shape=ft.RoundedRectangleBorder(radius=10), padding=15),
-                                            on_click=lambda _: file_picker.pick_files(allow_multiple=False, file_type=ft.FilePickerFileType.IMAGE)),
-                            ft.Text("Nota: Si no aparece la cámara, verifica los permisos de la app en Ajustes.", size=12, color="grey", italic=True),
+                            ft.Row(
+                                [
+                                    ft.ElevatedButton("Galería", icon="photo_library", 
+                                                    style=ft.ButtonStyle(shape=ft.RoundedRectangleBorder(radius=10), padding=15),
+                                                    on_click=lambda _: file_picker.pick_files(allow_multiple=False, file_type=ft.FilePickerFileType.IMAGE)),
+                                    ft.ElevatedButton("Cámara", icon="camera_alt", 
+                                                    style=ft.ButtonStyle(shape=ft.RoundedRectangleBorder(radius=10), padding=15, bgcolor=ft.colors.GREEN_600, color="white"),
+                                                    on_click=lambda _: file_picker.pick_files(allow_multiple=False, file_type=ft.FilePickerFileType.IMAGE)),
+                                ],
+                                alignment=ft.MainAxisAlignment.CENTER,
+                                spacing=20
+                            ),
+                            ft.Text("Nota: Si 'Cámara' no abre la cámara, usa 'Galería' y busca la opción de cámara.", size=12, color="grey", italic=True),
                             img_control,
                             toggle_btn, # Botón para ver imagen procesada
                             ft.Divider(),

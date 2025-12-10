@@ -83,22 +83,29 @@ class DetectionController:
                      try:
                         if USE_TFLITE:
                             self.interpreter = tflite.Interpreter(model_path=found_path)
-                        else:
+                            print(f"Modelo TFLite cargado (Runtime): {found_path}")
+                        elif 'tf' in globals():
                             self.interpreter = tf.lite.Interpreter(model_path=found_path)
+                            print(f"Modelo TFLite cargado (TF): {found_path}")
+                        else:
+                            raise ImportError("Ni tflite_runtime ni tensorflow disponibles.")
                         
                         self.interpreter.allocate_tensors()
                         self.input_details = self.interpreter.get_input_details()
                         self.output_details = self.interpreter.get_output_details()
                         self.use_interpreter_logic = True
-                        print(f"Modelo TFLite cargado: {found_path}")
+                        
                      except Exception as e_tflite:
                          print(f"Error cargando TFLite en {found_path}: {e_tflite}")
                          self.model_load_error = str(e_tflite)
 
                 elif found_path.endswith(".h5") and not USE_TFLITE:
-                    self.model = tf.keras.models.load_model(found_path)
-                    self.use_interpreter_logic = False
-                    print(f"Modelo H5 cargado: {found_path}")
+                    if 'tf' in globals():
+                        self.model = tf.keras.models.load_model(found_path)
+                        self.use_interpreter_logic = False
+                        print(f"Modelo H5 cargado: {found_path}")
+                    else:
+                        self.model_load_error = "Modelo es .h5 pero TensorFlow no está instalado (Móvil?)"
             else:
                 # Debugging brutal: Listar archivos para ver qué pasa
                 files_in_cwd = os.listdir('.')
