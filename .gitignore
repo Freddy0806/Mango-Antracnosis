@@ -1,0 +1,54 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+share/python-wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+
+# Virtual Env
+venv/
+env/
+ENV/
+.env
+.venv
+
+# Flet
+flet-build/
+
+# VS Code
+.vscode/
+
+# Datasets & Models (Large files)
+# Descomentar si quieres subir el dataset (no recomendado si es muy pesado)
+# dataset/
+# dataset_gray/
+# uploads/
+
+# Rutas temporales de servidor movil
+assets/uploads/
+
+# Ignorar archivos locales de usuario, pero mantener el modelo entrenado si es pequeño (<100MB)
+# mango_model_gray.h5
+# training_results.png
+
+# Windows
+Thumbs.db
+ehthumbs.db
+Desktop.ini

@@ -1,0 +1,53 @@
+name: Build Android APK
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.24.0' # Versión estable reciente
+          channel: 'stable'
+
+      - name: Install Flet and Dependencies
+        run: |
+          pip install flet
+          # Instalamos las dependencias del proyecto para que flet build las vea
+          # Nota: Alguna dependencias pesadas (TensorFlow) pueden requerir manejo especial en mobile
+          # pero intentaremos el build estándar primero.
+          pip install -r requirements.txt
+
+      - name: Build APK
+        run: |
+          # Flet build apk compila el código Python y lo empaqueta con un runtime de Android
+          flet build apk --verbose
+
+      - name: Upload APK Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: mango-app-release
+          path: build/apk/**/*.apk

@@ -1,0 +1,24 @@
+INSTRUCCIONES PARA DATASETS
+===========================
+
+Para entrenar el modelo de Inteligencia Artificial, necesitas descargar imágenes de mangos y organizarlas en las carpetas que he creado.
+
+1. Descarga los datasets sugeridos:
+   - SenMangoFruitDDS: https://data.mendeley.com/datasets/jvszp9cbpw/4
+   - MangoDHDS: https://data.mendeley.com/datasets/b4nrw5hyyc/1
+   - Mango Diseases Dataset: https://universe.roboflow.com/alavia-batool-ov8a3/mango-diseases-dataset-cqbvo
+
+2. Organiza las imágenes en la carpeta 'dataset' siguiendo esta estructura según la severidad visual:
+
+   dataset/
+   ├── nivel_0/  (Pon aquí imágenes de mangos SANOS)
+   ├── nivel_1/  (Pon aquí imágenes con infección LEVE - puntos pequeños)
+   ├── nivel_2/  (Pon aquí imágenes con infección MODERADA)
+   ├── nivel_3/  (Pon aquí imágenes con infección SEVERA - manchas grandes)
+   └── nivel_4/  (Pon aquí imágenes con infección MUY SEVERA - fruto podrido/negro)
+
+3. Una vez tengas las imágenes en sus carpetas, ejecuta el script de entrenamiento:
+   
+   python train_model.py
+
+Esto generará el archivo 'mango_model.h5' que la aplicación usará para detectar la enfermedad.
