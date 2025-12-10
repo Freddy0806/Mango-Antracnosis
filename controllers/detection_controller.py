@@ -49,58 +49,71 @@ class DetectionController:
         conn.close()
 
     def load_model(self): # Renamed from _load_model
-        current_dir = os.path.dirname(os.path.abspath(__file__))
-        project_root = os.path.dirname(current_dir)
+        # Lógica de búsqueda robusta para Android/PC
+        search_paths = [
+            "mango_model_gray.tflite",
+            "assets/mango_model_gray.tflite",
+            os.path.join(os.path.dirname(__file__), "..", "mango_model_gray.tflite"),
+            os.path.join(os.path.dirname(__file__), "..", "assets", "mango_model_gray.tflite"),
+            "/data/user/0/com.flet.mango_antracnosis/files/flet/app/assets/mango_model_gray.tflite" # Hardcoded common Android path
+        ]
         
-        # Prioridad 1: Modelo TFLite (Móvil/Optimizado) - Buscar en assets
-        # En Android, Flet descomprime assets en una ubicación accesible
-        tflite_path = os.path.join(project_root, "assets", "mango_model_gray.tflite")
-        
-        # Fallback: Intentar ruta relativa simple si project_root falla en móvil
-        if not os.path.exists(tflite_path):
-             tflite_path = "assets/mango_model_gray.tflite"
+        found_path = None
+        for path in search_paths:
+            if os.path.exists(path):
+                found_path = path
+                break
+            # Try absolute path resolution
+            abs_path = os.path.abspath(path)
+            if os.path.exists(abs_path):
+                found_path = abs_path
+                break
 
-        # Prioridad 2: Modelo H5 (PC/Training)
-        h5_path = os.path.join(project_root, "mango_model_gray.h5")
+        # Fallback a H5 si estamos en PC
+        h5_path = "mango_model_gray.h5"
+        if not found_path and os.path.exists(h5_path):
+             found_path = h5_path
+
+        self.last_search_debug = f"CWD: {os.getcwd()} | Searched: {search_paths} | Found: {found_path}"
+        print(self.last_search_debug)
 
         try:
-            if USE_TFLITE:
-                # Carga modo TFLite
-                if os.path.exists(tflite_path):
-                    self.interpreter = tflite.Interpreter(model_path=tflite_path)
-                    self.interpreter.allocate_tensors()
-                    self.input_details = self.interpreter.get_input_details()
-                    self.output_details = self.interpreter.get_output_details()
-                    self.use_interpreter_logic = True
-                    print(f"Modelo TFLite cargado: {tflite_path}")
-                else:
-                    print(f"Error: {tflite_path} no encontrado.")
-            
-            elif USE_TFLITE is False:
-                # Carga modo TensorFlow Full
-                # Intentamos cargar TFLite con TF completo si existe, sino H5
-                if os.path.exists(tflite_path):
-                     # Podemos usar TFLite dentro de TF completo también
-                    self.interpreter = tf.lite.Interpreter(model_path=tflite_path)
-                    self.interpreter.allocate_tensors()
-                    self.input_details = self.interpreter.get_input_details()
-                    self.output_details = self.interpreter.get_output_details()
-                    # Marcamos flag interno para usar logica de interprete
-                    self.use_interpreter_logic = True
-                    print(f"Modelo TFLite cargado con TF: {tflite_path}")
-                elif os.path.exists(h5_path):
-                    self.model = tf.keras.models.load_model(h5_path)
+            if found_path:
+                if found_path.endswith(".tflite"):
+                     try:
+                        if USE_TFLITE:
+                            self.interpreter = tflite.Interpreter(model_path=found_path)
+                        else:
+                            self.interpreter = tf.lite.Interpreter(model_path=found_path)
+                        
+                        self.interpreter.allocate_tensors()
+                        self.input_details = self.interpreter.get_input_details()
+                        self.output_details = self.interpreter.get_output_details()
+                        self.use_interpreter_logic = True
+                        print(f"Modelo TFLite cargado: {found_path}")
+                     except Exception as e_tflite:
+                         print(f"Error cargando TFLite en {found_path}: {e_tflite}")
+                         self.model_load_error = str(e_tflite)
+
+                elif found_path.endswith(".h5") and not USE_TFLITE:
+                    self.model = tf.keras.models.load_model(found_path)
                     self.use_interpreter_logic = False
-                    print(f"Modelo H5 cargado: {h5_path}")
-                else:
-                    print("Error: No se encontró ningún modelo (.tflite ni .h5)")
+                    print(f"Modelo H5 cargado: {found_path}")
+            else:
+                # Debugging brutal: Listar archivos para ver qué pasa
+                files_in_cwd = os.listdir('.')
+                self.model_load_error = f"No se encontró el modelo. CWD: {os.getcwd()}. Files: {files_in_cwd}"
+                print(self.model_load_error)
 
         except Exception as e:
-            print(f"Error cargando modelo: {e}")
+            print(f"Error general cargando modelo: {e}")
+            self.model_load_error = str(e)
 
     def detect_disease(self, image_path): # Renamed from predict_image
         if (self.model is None and self.interpreter is None):
-            return {"error": "Modelo no cargado"}
+            error_msg = getattr(self, 'model_load_error', 'Modelo no cargado (Razón desconocida)')
+            debug_msg = getattr(self, 'last_search_debug', 'No debug info')
+            return {"error": f"{error_msg}\nDEBUG: {debug_msg}"}
 
         try:
             # Preprocesamiento
