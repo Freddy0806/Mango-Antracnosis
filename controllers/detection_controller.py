@@ -52,8 +52,14 @@ class DetectionController:
         current_dir = os.path.dirname(os.path.abspath(__file__))
         project_root = os.path.dirname(current_dir)
         
-        # Prioridad 1: Modelo TFLite (Móvil/Optimizado)
-        tflite_path = os.path.join(project_root, "mango_model_gray.tflite")
+        # Prioridad 1: Modelo TFLite (Móvil/Optimizado) - Buscar en assets
+        # En Android, Flet descomprime assets en una ubicación accesible
+        tflite_path = os.path.join(project_root, "assets", "mango_model_gray.tflite")
+        
+        # Fallback: Intentar ruta relativa simple si project_root falla en móvil
+        if not os.path.exists(tflite_path):
+             tflite_path = "assets/mango_model_gray.tflite"
+
         # Prioridad 2: Modelo H5 (PC/Training)
         h5_path = os.path.join(project_root, "mango_model_gray.h5")
 
