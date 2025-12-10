@@ -33,47 +33,93 @@ class DetectionController:
         conn.commit()
         conn.close()
 
-    def _load_model(self):
-        if os.path.exists(self.model_path):
-            try:
-                self.model = tf.keras.models.load_model(self.model_path)
-                print(f"Modelo IA ({self.model_path}) cargado exitosamente.")
-            except Exception as e:
-                print(f"Error cargando modelo: {e}")
-        else:
-            print(f"Advertencia: No se encontró el modelo en {self.model_path}. La detección fallará hasta que se entrene el modelo.")
-
-    def detect_disease(self, image_path):
-        if not os.path.exists(image_path):
-            return {"error": "Imagen no encontrada"}
-
-        if self.model is None:
-            return {"error": "Modelo IA no encontrado. Por favor entrena el modelo primero."}
+    def load_model(self): # Renamed from _load_model
+        current_dir = os.path.dirname(os.path.abspath(__file__))
+        project_root = os.path.dirname(current_dir)
+        
+        # Prioridad 1: Modelo TFLite (Móvil/Optimizado)
+        tflite_path = os.path.join(project_root, "mango_model_gray.tflite")
+        # Prioridad 2: Modelo H5 (PC/Training)
+        h5_path = os.path.join(project_root, "mango_model_gray.h5")
 
         try:
-            # 1. Leer imagen
-            img = cv2.imread(image_path)
+            if USE_TFLITE:
+                # Carga modo TFLite
+                if os.path.exists(tflite_path):
+                    self.interpreter = tflite.Interpreter(model_path=tflite_path)
+                    self.interpreter.allocate_tensors()
+                    self.input_details = self.interpreter.get_input_details()
+                    self.output_details = self.interpreter.get_output_details()
+                    self.use_interpreter_logic = True
+                    print(f"Modelo TFLite cargado: {tflite_path}")
+                else:
+                    print(f"Error: {tflite_path} no encontrado.")
+            
+            elif USE_TFLITE is False:
+                # Carga modo TensorFlow Full
+                # Intentamos cargar TFLite con TF completo si existe, sino H5
+                if os.path.exists(tflite_path):
+                     # Podemos usar TFLite dentro de TF completo también
+                    self.interpreter = tf.lite.Interpreter(model_path=tflite_path)
+                    self.interpreter.allocate_tensors()
+                    self.input_details = self.interpreter.get_input_details()
+                    self.output_details = self.interpreter.get_output_details()
+                    # Marcamos flag interno para usar logica de interprete
+                    self.use_interpreter_logic = True
+                    print(f"Modelo TFLite cargado con TF: {tflite_path}")
+                elif os.path.exists(h5_path):
+                    self.model = tf.keras.models.load_model(h5_path)
+                    self.use_interpreter_logic = False
+                    print(f"Modelo H5 cargado: {h5_path}")
+                else:
+                    print("Error: No se encontró ningún modelo (.tflite ni .h5)")
+
+        except Exception as e:
+            print(f"Error cargando modelo: {e}")
+
+    def detect_disease(self, image_path): # Renamed from predict_image
+        if (self.model is None and self.interpreter is None):
+            return {"error": "Modelo no cargado"}
+
+        try:
+            # Preprocesamiento
+            # 1. Cargar imagen en escala de grises
+            img = cv2.imread(image_path, cv2.IMREAD_GRAYSCALE)
+            
             if img is None:
                 return {"error": "No se pudo leer la imagen"}
+
+            # CLAHE
+            clahe = cv2.createCLAHE(clipLimit=2.0, tileGridSize=(8, 8))
+            img = clahe.apply(img)
             
-            # 2. Preprocesamiento (Grayscale + CLAHE) - IGUAL QUE EN ENTRENAMIENTO
-            gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
-            clahe = cv2.createCLAHE(clipLimit=2.0, tileGridSize=(8,8))
-            enhanced = clahe.apply(gray)
-            final_img = cv2.cvtColor(enhanced, cv2.COLOR_GRAY2BGR) # 3 canales para EfficientNet
+            # Resize
+            img = cv2.resize(img, (224, 224))
+            
+            # Convertir a 3 canales (EfficientNet lo requiere)
+            img = cv2.cvtColor(img, cv2.COLOR_GRAY2RGB)
+            
+            # Normalización (EfficientNet suele esperar 0-255, pero verificamos float)
+            # El modelo fue entrenado sin rescale 1/255 en el generator? 
+            # Revisando train_model_gray.py: ImageDataGenerator NO tenia rescale. 
+            # EfficientNet tiene su propio preprocesamiento interno.
+            img_array = np.expand_dims(img, axis=0) # (1, 224, 224, 3)
 
-            # 3. Resize y preparación
-            img_resized = cv2.resize(final_img, (224, 224))
-            img_array = tf.keras.preprocessing.image.img_to_array(img_resized)
-            img_array = np.expand_dims(img_array, axis=0) # Batch dimension
-            # img_array = img_array / 255.0 # REMOVIDO: EfficientNet espera 0-255
+            # Inferencia
+            if self.use_interpreter_logic: # Use the flag to decide
+                # Usar Intérprete TFLite
+                input_data = img_array.astype(np.float32)
+                self.interpreter.set_tensor(self.input_details[0]['index'], input_data)
+                self.interpreter.invoke()
+                prediction = self.interpreter.get_tensor(self.output_details[0]['index'])
+            else:
+                # Usar Keras Model H5
+                prediction = self.model.predict(img_array)
 
-            # 2. Predicción
-            predictions = self.model.predict(img_array)
-            class_idx = np.argmax(predictions[0])
-            confidence = float(predictions[0][class_idx])
-
-            # 3. Mapeo de resultados
+            predicted_class = np.argmax(prediction, axis=1)[0]
+            confidence = np.max(prediction)
+            
+            # Mapeo de resultados
             # Asumimos que las clases se cargaron en orden alfanumérico: nivel_0, nivel_1, ...
             levels = {
                 0: {"status": "Sano", "phase": "Nivel 0: Fruto sano", "treatment": "Ninguno. Monitoreo preventivo."},
@@ -83,7 +129,7 @@ class DetectionController:
                 4: {"status": "Antracnosis", "phase": "Nivel 4: Infección muy severa", "treatment": "Destrucción total del fruto y cuarentena de la zona."}
             }
 
-            result_info = levels.get(class_idx, levels[0])
+            result_info = levels.get(predicted_class, levels[0])
             
             # Guardar imagen procesada para visualización
             timestamp = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
@@ -94,14 +140,14 @@ class DetectionController:
             if not os.path.exists("assets"):
                 os.makedirs("assets")
                 
-            cv2.imwrite(processed_path, final_img)
+            cv2.imwrite(processed_path, img) # Save the preprocessed image (CLAHE, resized, 3-channel)
 
             result = {
                 "status": result_info["status"],
                 "phase": result_info["phase"],
-                "confidence": confidence,
+                "confidence": float(confidence),
                 "treatment": result_info["treatment"],
-                "infection_ratio": confidence * 100, 
+                "infection_ratio": float(confidence * 100), 
                 "processed_image": processed_path # Devolvemos la imagen procesada (Gris+CLAHE)
             }
 
