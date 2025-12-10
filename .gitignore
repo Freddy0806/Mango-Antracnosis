@@ -36,12 +36,9 @@ flet-build/
 .vscode/
 
 # Datasets & Models (Large files)
-# Descomentar si quieres subir el dataset (no recomendado si es muy pesado)
-# dataset/
-# dataset_gray/
-# uploads/
-
-# Rutas temporales de servidor movil
+dataset/
+dataset_gray/
+uploads/
 assets/uploads/
 
 # Ignorar archivos locales de usuario, pero mantener el modelo entrenado si es pequeño (<100MB)
