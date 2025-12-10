@@ -191,6 +191,7 @@ class DetectionView:
                             ft.ElevatedButton("Cámara / Galería", icon="camera_alt", 
                                             style=ft.ButtonStyle(shape=ft.RoundedRectangleBorder(radius=10), padding=15),
                                             on_click=lambda _: file_picker.pick_files(allow_multiple=False, file_type=ft.FilePickerFileType.IMAGE)),
+                            ft.Text("Nota: Si no aparece la cámara, verifica los permisos de la app en Ajustes.", size=12, color="grey", italic=True),
                             img_control,
                             toggle_btn, # Botón para ver imagen procesada
                             ft.Divider(),
