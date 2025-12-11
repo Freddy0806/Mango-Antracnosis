@@ -1,5 +1,6 @@
+--extra-index-url https://pypi.flet.dev/simple/
 flet
 opencv-python
-numpy==1.26.4
+numpy<2
 pillow
 tflite-runtime
