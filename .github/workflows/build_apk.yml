@@ -53,7 +53,7 @@ jobs:
 
       - name: Build APK
         env:
-          PIP_EXTRA_INDEX_URL: https://pypi.flet.dev/simple/
+          PIP_CONFIG_FILE: ${{ github.workspace }}/pip.conf
         run: |
           # Flet build apk compila el código Python y lo empaqueta con un runtime de Android
           flet build apk --verbose
