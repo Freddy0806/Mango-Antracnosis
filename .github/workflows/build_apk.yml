@@ -42,6 +42,10 @@ jobs:
           # pero intentaremos el build estándar primero.
           pip install -r requirements.txt
 
+      - name: Accept Android Licenses
+        run: |
+          yes | flutter doctor --android-licenses
+
       - name: Build APK
         run: |
           # Flet build apk compila el código Python y lo empaqueta con un runtime de Android
