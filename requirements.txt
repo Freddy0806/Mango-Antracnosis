@@ -1,6 +1,5 @@
---extra-index-url https://pypi.flet.dev/simple/
 flet
-opencv-python
+opencv-python-headless
 numpy<2
 pillow
 tflite-runtime
