@@ -52,6 +52,8 @@ jobs:
           yes | flutter doctor --android-licenses
 
       - name: Build APK
+        env:
+          PIP_EXTRA_INDEX_URL: https://pypi.flet.dev/simple/
         run: |
           # Flet build apk compila el código Python y lo empaqueta con un runtime de Android
           flet build apk --verbose
