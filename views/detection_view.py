@@ -190,17 +190,14 @@ class DetectionView:
                             ft.Text("Subir Imagen de Mango", size=20),
                             ft.Row(
                                 [
-                                    ft.ElevatedButton("Galería", icon="photo_library", 
-                                                    style=ft.ButtonStyle(shape=ft.RoundedRectangleBorder(radius=10), padding=15),
-                                                    on_click=lambda _: file_picker.pick_files(allow_multiple=False, file_type=ft.FilePickerFileType.IMAGE)),
-                                    ft.ElevatedButton("Cámara", icon="camera_alt", 
-                                                    style=ft.ButtonStyle(shape=ft.RoundedRectangleBorder(radius=10), padding=15, bgcolor="green", color="white"),
+                                    ft.ElevatedButton("Seleccionar Foto / Cámara", icon="add_a_photo", 
+                                                    style=ft.ButtonStyle(shape=ft.RoundedRectangleBorder(radius=10), padding=15, bgcolor="blue", color="white"),
                                                     on_click=lambda _: file_picker.pick_files(allow_multiple=False, file_type=ft.FilePickerFileType.IMAGE)),
                                 ],
                                 alignment=ft.MainAxisAlignment.CENTER,
                                 spacing=20
                             ),
-                            ft.Text("Nota: Si 'Cámara' no abre la cámara, usa 'Galería' y busca la opción de cámara.", size=12, color="grey", italic=True),
+                            ft.Text("Nota: Usa la opción de cámara dentro del selector si deseas tomar una foto.", size=12, color="grey", italic=True),
                             img_control,
                             toggle_btn, # Botón para ver imagen procesada
                             ft.Divider(),
