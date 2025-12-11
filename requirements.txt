@@ -4,7 +4,7 @@ numpy
 pillow
 # pandas (Solo para scripts batch offline)
 # tensorflow (Eliminado para móvil)
-tflite-runtime
+ai-edge-litert
 # tensorflow-cpu; platform_system != 'Linux' # Opcional para dev local
 # scikit-learn (Solo para entrenamiento)
 # matplotlib (Solo para entrenamiento)

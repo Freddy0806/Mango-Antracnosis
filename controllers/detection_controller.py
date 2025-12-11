@@ -9,14 +9,19 @@ try:
     import tensorflow as tf
     USE_TFLITE = False
     print("Usando TensorFlow Full (PC)")
-except ImportError:
-    try:
-        import tflite_runtime.interpreter as tflite
-        USE_TFLITE = True
-        print("Usando TFLite Runtime (Móvil)")
     except ImportError:
-        print("Error: No se encontró TensorFlow ni TFLite Runtime")
-        USE_TFLITE = None
+        try:
+            import tflite_runtime.interpreter as tflite
+            USE_TFLITE = True
+            print("Usando TFLite Runtime (Móvil)")
+        except ImportError:
+            try:
+                import ai_edge_litert.interpreter as tflite
+                USE_TFLITE = True
+                print("Usando AI Edge LiteRT (Móvil)")
+            except ImportError:
+                print("Error: No se encontró TensorFlow, TFLite Runtime ni AI Edge LiteRT")
+                USE_TFLITE = None
 
 from controllers.auth_controller import auth_controller
 from utils.email_service import email_service
