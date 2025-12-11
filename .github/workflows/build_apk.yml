@@ -45,7 +45,7 @@ jobs:
       - name: Build APK
         run: |
           # Flet build apk compila el código Python y lo empaqueta con un runtime de Android
-          flet build apk --verbose --permissions camera
+          flet build apk --verbose
 
       - name: Upload APK Artifact
         uses: actions/upload-artifact@v4
