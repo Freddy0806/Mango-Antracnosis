@@ -40,15 +40,15 @@ jobs:
 
       - name: Inject TFLite Runtime (Manual)
         run: |
-          wget https://files.pythonhosted.org/packages/f2/e9/5fc0435129c23c17551fcfadc82bd0d5482276213dfbc641f07b4420cb6d/tflite_runtime-2.14.0-cp311-cp311-manylinux_2_34_aarch64.whl
-          unzip tflite_runtime-2.14.0-cp311-cp311-manylinux_2_34_aarch64.whl
-          rm -rf tflite_runtime-*.whl
+          curl -L "https://files.pythonhosted.org/packages/f2/e9/5fc0435129c23c17551fcfadc82bd0d5482276213dfbc641f07b4420cb6d/tflite_runtime-2.14.0-cp311-cp311-manylinux_2_34_aarch64.whl" -o tflite_runtime.whl
+          unzip tflite_runtime.whl
+          rm tflite_runtime.whl
 
       - name: Install Flet and Dependencies
         run: |
           python -m pip install --upgrade pip
           pip install flet==0.24.1
-          pip install -r requirements.txt
+          # No instalamos requirements.txt en el host para evitar error de arquitectura (arm64 vs x86)
           # Nota: Alguna dependencias pesadas (TensorFlow) pueden requerir manejo especial en mobile
           # pero intentaremos el build estándar primero.
 
