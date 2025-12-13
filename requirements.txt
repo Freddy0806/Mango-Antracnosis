@@ -1,5 +1,3 @@
 flet==0.24.1
 opencv-python-headless
-numpy==1.23.5
 pillow
-tflite-runtime
