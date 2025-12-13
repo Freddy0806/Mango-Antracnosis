@@ -1,4 +1,5 @@
-import cv2
+# import cv2 # Eliminado para compatibilidad Android
+from PIL import Image, ImageOps
 import numpy as np
 import os
 import sqlite3
@@ -123,25 +124,22 @@ class DetectionController:
             return {"error": f"{error_msg}\nDEBUG: {debug_msg}"}
 
         try:
-            # Preprocesamiento
-            # 1. Cargar imagen en escala de grises
-            img = cv2.imread(image_path, cv2.IMREAD_GRAYSCALE)
+        try:
+            # Preprocesamiento con PIL (Reemplaza a OpenCV para compatibilidad móvil)
+            # 1. Cargar imagen y convertir a grises (L)
+            img = Image.open(image_path).convert('L')
             
-            if img is None:
-                return {"error": "No se pudo leer la imagen"}
-
-            # CLAHE
-            clahe = cv2.createCLAHE(clipLimit=2.0, tileGridSize=(8, 8))
-            img = clahe.apply(img)
+            # Nota: CLAHE no está directamente disponible en PIL estándar.
+            # Se omite para garantizar build de APK.
             
             # Resize
-            img = cv2.resize(img, (224, 224))
+            img = img.resize((224, 224))
             
-            # Convertir a 3 canales (EfficientNet lo requiere)
-            img = cv2.cvtColor(img, cv2.COLOR_GRAY2RGB)
+            # Convertir a 3 canales (RGB) para EfficientNet
+            img = img.convert('RGB')
             
-            # Normalización (EfficientNet suele esperar 0-255, pero verificamos float)
-            img_array = img.astype(np.float32)
+            # Convertir a array numpy y normalizar
+            img_array = np.array(img, dtype=np.float32)
             img_array = np.expand_dims(img_array, axis=0) # (1, 224, 224, 3)
 
             # Inferencia

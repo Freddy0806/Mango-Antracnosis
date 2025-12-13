@@ -1,4 +1,4 @@
 flet==0.24.1
-opencv-python
+
 numpy<2
 pillow
