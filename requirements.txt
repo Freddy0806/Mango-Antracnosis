@@ -1,4 +1,4 @@
 flet
-
+tflite-runtime
 numpy<2
 pillow

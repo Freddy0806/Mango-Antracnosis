@@ -16,8 +16,13 @@ except ImportError:
         USE_TFLITE = True
         print("Usando TFLite Runtime (Móvil)")
     except ImportError:
-        print("Error: No se encontró TensorFlow ni TFLite Runtime")
-        USE_TFLITE = None
+        try:
+            import ai_edge_litert.interpreter as tflite
+            USE_TFLITE = True
+            print("Usando AI Edge LiteRT")
+        except ImportError:
+            print("Error: No se encontró TensorFlow ni TFLite Runtime")
+            USE_TFLITE = None
 
 from controllers.auth_controller import auth_controller
 from utils.email_service import email_service
