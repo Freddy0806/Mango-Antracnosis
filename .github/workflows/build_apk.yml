@@ -38,11 +38,8 @@ jobs:
           flutter-version: '3.24.0' # Versión estable reciente
           channel: 'stable'
 
-      - name: Inject TFLite Runtime (Manual)
-        run: |
-          curl -L "https://files.pythonhosted.org/packages/f2/e9/5fc0435129c23c17551fcfadc82bd0d5482276213dfbc641f07b4420cb6d/tflite_runtime-2.14.0-cp311-cp311-manylinux_2_34_aarch64.whl" -o tflite_runtime.whl
-          unzip tflite_runtime.whl
-          rm tflite_runtime.whl
+      - name: Inject TFLite Runtime (Python Script)
+        run: python utils/setup_android_deps.py
 
       - name: Install Flet and Dependencies
         run: |
