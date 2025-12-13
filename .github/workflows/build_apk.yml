@@ -40,8 +40,8 @@ jobs:
 
       - name: Inject TFLite Runtime (Manual)
         run: |
-          wget https://github.com/feranick/TFLite-builds/releases/download/v2.14.0/tflite_runtime-2.14.0-cp311-cp311-linux_aarch64.whl
-          unzip tflite_runtime-2.14.0-cp311-cp311-linux_aarch64.whl
+          pip download tflite-runtime==2.14.0 --platform manylinux_2_34_aarch64 --python-version 3.11 --only-binary=:all: --no-deps -d .
+          unzip tflite_runtime-*.whl
           rm -rf tflite_runtime-*.whl
 
       - name: Install Flet and Dependencies
