@@ -1,4 +1,4 @@
-flet
-https://github.com/feranick/TFLite-builds/releases/download/v2.16.1/tflite_runtime-2.16.1-cp312-cp312-manylinux_2_17_aarch64.manylinux2014_aarch64.whl
+flet==0.24.1
+tflite-runtime==2.14.0
 numpy<2
 pillow
