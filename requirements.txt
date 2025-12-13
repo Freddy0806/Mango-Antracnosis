@@ -1,5 +1,4 @@
 flet
-ai-edge-litert
-mpmath
+https://github.com/feranick/TFLite-builds/releases/download/v2.16.1/tflite_runtime-2.16.1-cp312-cp312-manylinux_2_17_aarch64.manylinux2014_aarch64.whl
 numpy<2
 pillow
