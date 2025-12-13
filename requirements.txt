@@ -1,4 +1,4 @@
 flet
 ai-edge-litert
-numpy
+numpy<2
 pillow
