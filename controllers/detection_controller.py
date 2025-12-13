@@ -124,7 +124,7 @@ class DetectionController:
             return {"error": f"{error_msg}\nDEBUG: {debug_msg}"}
 
         try:
-        try:
+
             # Preprocesamiento con PIL (Reemplaza a OpenCV para compatibilidad móvil)
             # 1. Cargar imagen y convertir a grises (L)
             img = Image.open(image_path).convert('L')
