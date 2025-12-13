@@ -1,5 +1,6 @@
-flet
-opencv-python-headless
+--only-binary :all:
+flet==0.24.1
+opencv-python
 numpy==1.26.4
 pillow
 tflite-runtime
