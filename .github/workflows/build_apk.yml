@@ -41,7 +41,7 @@ jobs:
       - name: Install Flet and Dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install flet==0.24.1
+          pip install flet
           # Instalamos las dependencias del proyecto para que flet build las vea
           # Nota: Alguna dependencias pesadas (TensorFlow) pueden requerir manejo especial en mobile
           # pero intentaremos el build estándar primero.
