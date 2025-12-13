@@ -1,4 +1,4 @@
 flet==0.24.1
-opencv-python-headless==4.9.0.80
-numpy==1.23.5
+opencv-python
+numpy<2
 pillow
