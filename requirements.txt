@@ -1,4 +1,5 @@
 flet
-tflite-runtime==2.14.0
+ai-edge-litert
+mpmath
 numpy<2
 pillow
