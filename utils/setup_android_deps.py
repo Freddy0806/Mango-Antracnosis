@@ -27,16 +27,19 @@ def get_pypi_url(package_name, version, filename_filter):
 def setup_deps():
     print(f"Inicio de inyección inteligente de dependencias...")
     
-    # Lista de tareas: (URL Directa o None, Función de búsqueda o None, Carpeta Destino)
+    # Lista de tareas completamente dinámica
     tasks = [
         {
-            "name": "tflite_runtime",
-            "direct_url": TFLITE_URL,
-            "filename": "tflite_runtime.whl",
+            "name": "tflite_runtime_manual",
+            "pypi_query": {
+                "package": "tflite-runtime",
+                "version": "2.14.0",
+                "filter": lambda f: "cp311-cp311-manylinux" in f and "aarch64" in f
+            },
             "target": "tflite_runtime"
         },
         {
-            "name": "numpy",
+            "name": "numpy_manual",
             "pypi_query": {
                 "package": "numpy",
                 "version": "1.23.5",
