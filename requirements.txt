@@ -1,4 +1,4 @@
-flet==0.24.1
-
-numpy<2
+flet
+ai-edge-litert
+numpy
 pillow
