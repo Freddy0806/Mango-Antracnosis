@@ -5,49 +5,62 @@ import urllib.request
 import shutil
 
 # URL exacta del wheel de tflite-runtime 2.14.0 para Python 3.11 (aarch64/Android)
-WHEEL_URL = "https://files.pythonhosted.org/packages/f2/e9/5fc0435129c23c17551fcfadc82bd0d5482276213dfbc641f07b4420cb6d/tflite_runtime-2.14.0-cp311-cp311-manylinux_2_34_aarch64.whl"
-WHEEL_FILE = "tflite_runtime.whl"
+WHEELS = [
+    {
+        "url": "https://files.pythonhosted.org/packages/f2/e9/5fc0435129c23c17551fcfadc82bd0d5482276213dfbc641f07b4420cb6d/tflite_runtime-2.14.0-cp311-cp311-manylinux_2_34_aarch64.whl",
+        "filename": "tflite_runtime.whl",
+        "target_folder": "tflite_runtime"
+    },
+    {
+        # Numpy 1.23.5 para Py3.11 Aarch64 (Compatibilidad probada)
+        "url": "https://files.pythonhosted.org/packages/1a/2e/151484f495d03375d336fe05f42df5e0c511a5b81c4e7ab9e4fc7729177a/numpy-1.23.5-cp311-cp311-manylinux_2_17_aarch64.manylinux2014_aarch64.whl",
+        "filename": "numpy.whl",
+        "target_folder": "numpy"
+    }
+]
 
 def setup_deps():
-    print(f"Inicio de descarga de dependencias Android...")
+    print(f"Inicio de inyección manual de dependencias Android...")
     
-    # 1. Descargar el wheel
-    print(f"Descargando {WHEEL_URL}...")
-    try:
-        urllib.request.urlretrieve(WHEEL_URL, WHEEL_FILE)
-        print("Descarga completada.")
-    except Exception as e:
-        print(f"ERROR FATAL descargando wheel: {e}")
-        # Intento de fallback o fail
-        sys.exit(1)
-
-    # 2. Verificar descarga
-    if not os.path.exists(WHEEL_FILE):
-        print("ERROR: El archivo no se descargó.")
-        sys.exit(1)
+    for lib in WHEELS:
+        url = lib["url"]
+        filename = lib["filename"]
+        target = lib.get("target_folder")
         
-    print(f"Tamaño del archivo: {os.path.getsize(WHEEL_FILE)} bytes")
+        print(f"\nProcesando: {filename}")
+        print(f"Descargando de {url}...")
+        
+        try:
+            urllib.request.urlretrieve(url, filename)
+            print("Descarga completada.")
+        except Exception as e:
+            print(f"ERROR FATAL descargando {filename}: {e}")
+            sys.exit(1)
 
-    # 3. Descomprimir
-    print("Descomprimiendo wheel...")
-    try:
-        with zipfile.ZipFile(WHEEL_FILE, 'r') as zip_ref:
-            zip_ref.extractall(".")
-        print("Descompresión exitosa.")
-    except Exception as e:
-        print(f"ERROR descomprimiendo: {e}")
-        sys.exit(1)
+        if not os.path.exists(filename):
+            print(f"ERROR: El archivo {filename} no se descargó.")
+            sys.exit(1)
+            
+        print(f"Tamaño: {os.path.getsize(filename)} bytes")
 
-    # 4. Verificar carpeta extraida
-    if os.path.exists("tflite_runtime"):
-        print("VERIFICADO: Carpeta 'tflite_runtime' existe. Inyección lista.")
-    else:
-        print("ERROR: No se encontró la carpeta 'tflite_runtime' tras descomprimir.")
-        sys.exit(1)
+        print("Descomprimiendo...")
+        try:
+            with zipfile.ZipFile(filename, 'r') as zip_ref:
+                zip_ref.extractall(".")
+            print("Descompresión exitosa.")
+        except Exception as e:
+            print(f"ERROR descomprimiendo {filename}: {e}")
+            sys.exit(1)
+            
+        # Verificación opcional
+        if target and os.path.exists(target):
+            print(f"VERIFICADO: Carpeta '{target}' existe.")
+        elif target:
+             print(f"ADVERTENCIA: No se encontró la carpeta '{target}' esperada.")
+        
+        os.remove(filename)
 
-    # 5. Limpieza
-    os.remove(WHEEL_FILE)
-    print("Limpieza completada.")
+    print("\n¡Limpieza completada! Dependencias inyectadas.")
 
 if __name__ == "__main__":
     setup_deps()
