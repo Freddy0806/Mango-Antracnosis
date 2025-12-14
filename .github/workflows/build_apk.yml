@@ -19,12 +19,14 @@ jobs:
       - name: Install Linux Dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install -y libgtk-3-dev ninja-build pkg-config
+          sudo apt-get install -y libgtk-3-dev ninja-build pkg-config patchelf
 
       - name: Setup Python
         uses: actions/setup-python@v5
         with:
           python-version: '3.12'
+
+      # ... (Java setup remains) ...
 
       - name: Setup Java
         uses: actions/setup-java@v4
@@ -35,8 +37,28 @@ jobs:
       - name: Setup Flutter
         uses: subosito/flutter-action@v2
         with:
-          flutter-version: '3.24.0' # Versión estable reciente
+          flutter-version: '3.24.0'
           channel: 'stable'
+
+      - name: Patch Vendored Libraries (Fix Termux vs Flet ABI)
+        run: |
+          echo "Patching .so files to depend on libpython3.12.so instead of libpython3.12.so.1.0..."
+          find . -name "*.so" -type f | while read -r file; do
+            echo "Processing $file"
+            
+            # Check modules needed
+            NEEDED=$(patchelf --print-needed "$file")
+            echo "  Needs: $NEEDED"
+            
+            if echo "$NEEDED" | grep -q "libpython3.12.so.1.0"; then
+              echo "  -> Patching libpython3.12.so.1.0 to libpython3.12.so"
+              patchelf --replace-needed libpython3.12.so.1.0 libpython3.12.so "$file"
+            fi
+            
+            # Termux sometimes links to /data/data/com.termux/... paths in rpath. clear them.
+            patchelf --shrink-rpath "$file" || true
+            patchelf --remove-rpath "$file" || true
+          done
 
 
 
