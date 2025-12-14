@@ -111,7 +111,7 @@ class DetectionController:
                             self.interpreter = tf.lite.Interpreter(model_path=found_path)
                             print(f"Modelo TFLite cargado (TF): {found_path}")
                         else:
-                            raise ImportError("Ni tflite_runtime ni tensorflow disponibles.")
+                            raise ImportError(f"Ni tflite_runtime ni tensorflow disponibles. \nDetalles Importación: {IMPORT_ERROR_details}")
                         
                         self.interpreter.allocate_tensors()
                         self.input_details = self.interpreter.get_input_details()
