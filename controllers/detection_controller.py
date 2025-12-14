@@ -5,7 +5,12 @@ import os
 import sqlite3
 import datetime
 
-# Intentar importar TensorFlow completo o TFLite Runtime
+import sys
+import traceback
+
+USE_TFLITE = None
+IMPORT_ERROR_details = ""
+
 try:
     import tensorflow as tf
     USE_TFLITE = False
@@ -15,14 +20,26 @@ except ImportError:
         import tflite_runtime.interpreter as tflite
         USE_TFLITE = True
         print("Usando TFLite Runtime (Móvil)")
-    except ImportError:
+    except ImportError as e:
+        IMPORT_ERROR_details += f"TFLite Import Error: {e}\n{traceback.format_exc()}\n"
+        print(f"DEBUG IMPORT ERROR: {e}")
         try:
             import ai_edge_litert.interpreter as tflite
             USE_TFLITE = True
             print("Usando AI Edge LiteRT")
-        except ImportError:
-            print("Error: No se encontró TensorFlow ni TFLite Runtime")
-            USE_TFLITE = None
+        except ImportError as e2:
+             IMPORT_ERROR_details += f"AIEdge Import Error: {e2}\n"
+             print(f"Error fatal importando modelo: {IMPORT_ERROR_details}")
+             USE_TFLITE = None
+
+# Debugging path
+print(f"DEBUG: sys.path: {sys.path}")
+try:
+    print(f"DEBUG: Files in .: {os.listdir('.')}")
+    if os.path.exists('tflite_runtime'):
+        print(f"DEBUG: Files in tflite_runtime: {os.listdir('tflite_runtime')}")
+except Exception:
+    pass
 
 from controllers.auth_controller import auth_controller
 from utils.email_service import email_service
