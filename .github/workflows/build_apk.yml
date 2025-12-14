@@ -55,9 +55,9 @@ jobs:
               patchelf --replace-needed libpython3.12.so.1.0 libpython3.12.so "$file"
             fi
             
-            # Termux sometimes links to /data/data/com.termux/... paths in rpath. clear them.
-            patchelf --shrink-rpath "$file" || true
-            patchelf --remove-rpath "$file" || true
+            # FORCE RPATH to $ORIGIN so libraries find their neighbors (like libopenblas.so)
+            echo "  -> Setting RPATH to \$ORIGIN"
+            patchelf --set-rpath '$ORIGIN' "$file"
           done
 
 
