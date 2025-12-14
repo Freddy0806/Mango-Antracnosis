@@ -1,3 +1,2 @@
 flet
-numpy<2
 pillow
