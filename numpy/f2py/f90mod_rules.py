@@ -1,12 +1,17 @@
+#!/usr/bin/env python3
 """
+
 Build F90 module support for f2py2e.
 
-Copyright 1999 -- 2011 Pearu Peterson all rights reserved.
-Copyright 2011 -- present NumPy Developers.
+Copyright 2000 Pearu Peterson all rights reserved,
+Pearu Peterson <pearu@ioc.ee>
 Permission to use, modify, and distribute this software is given under the
 terms of the NumPy License.
 
 NO WARRANTY IS EXPRESSED OR IMPLIED.  USE AT YOUR OWN RISK.
+$Date: 2005/02/03 19:30:23 $
+Pearu Peterson
+
 """
 __version__ = "$Revision: 1.27 $"[10:-1]
 
@@ -39,6 +44,19 @@ def findf90modules(m):
             ret = ret + findf90modules(b)
     return ret
 
+# Chaquopy: get this from the generated header file rather than the build machine.
+import os
+import pkgutil
+numpyconfig_h = pkgutil.get_data("numpy", "core/include/numpy/_numpyconfig.h").decode("UTF-8")
+for line in numpyconfig_h.splitlines():
+    words = line.split()
+    # This is valid because npy_common.h has `#define NPY_SIZEOF_INTP NPY_SIZEOF_PY_INTPTR_T`.
+    if (len(words) == 3) and (words[:2] == ["#define", "NPY_SIZEOF_PY_INTPTR_T"]):
+        SIZEOF_INTP = int(words[2])
+        break
+else:
+    raise Exception("Couldn't determine SIZEOF_INTP")
+
 fgetdims1 = """\
       external f2pysetdata
       logical ns
@@ -55,7 +73,7 @@ fgetdims1 = """\
             deallocate(d)
          end if
       end if
-      if ((.not.allocated(d)).and.(s(1).ge.1)) then""" % np.intp().itemsize
+      if ((.not.allocated(d)).and.(s(1).ge.1)) then""" % SIZEOF_INTP
 
 fgetdims2 = """\
       end if
@@ -94,8 +112,6 @@ def buildhooks(pymod):
 
     def dadd(line, s=doc):
         s[0] = '%s\n%s' % (s[0], line)
-
-    usenames = getuseblocks(pymod)
     for m in findf90modules(pymod):
         sargs, fargs, efargs, modobjs, notvars, onlyvars = [], [], [], [], [
             m['name']], []
@@ -107,20 +123,11 @@ def buildhooks(pymod):
                 notvars.append(b['name'])
         for n in m['vars'].keys():
             var = m['vars'][n]
-
-            if (n not in notvars and isvariable(var)) and (not l_or(isintent_hide, isprivate)(var)):
+            if (n not in notvars) and (not l_or(isintent_hide, isprivate)(var)):
                 onlyvars.append(n)
                 mfargs.append(n)
         outmess('\t\tConstructing F90 module support for "%s"...\n' %
                 (m['name']))
-        if len(onlyvars) == 0 and len(notvars) == 1 and m['name'] in notvars:
-            outmess(f"\t\t\tSkipping {m['name']} since there are no public vars/func in this module...\n")
-            continue
-
-        # gh-25186
-        if m['name'] in usenames and containscommon(m):
-            outmess(f"\t\t\tSkipping {m['name']} since it is in 'use' and contains a common block...\n")
-            continue
         if onlyvars:
             outmess('\t\t  Variables: %s\n' % (' '.join(onlyvars)))
         chooks = ['']
